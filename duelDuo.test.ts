@@ -26,3 +26,14 @@ test('Draw Button Gives Choices', async () => {
     const displayed = await choices.isDisplayed()
     expect(displayed).toBe(true)
 })
+
+test('Can add to Duo', async () => {
+    const draw = await driver.findElement(By.id('draw'));
+    draw.click();
+    await driver.sleep(5000)
+    const addDuo = await driver.findElement(By.xpath("//button[contains(text(),'Add to Duo')]"))
+    addDuo.click()
+    const playersDuo = await driver.findElement(By.id('player-duo'))
+    const displayed = await playersDuo.isDisplayed()
+    expect(displayed).toBe(true)
+})
