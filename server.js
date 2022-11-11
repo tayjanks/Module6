@@ -6,6 +6,17 @@ const {shuffleArray} = require('./utils')
 
 app.use(express.json())
 
+// include and initialize the rollbar library with your access token
+var Rollbar = require('rollbar')
+var rollbar = new Rollbar({
+  accessToken: 'e544ef24e877480ba416ef73abdd057d',
+  captureUncaught: true,
+  captureUnhandledRejections: true,
+})
+
+// record a generic message and send it to Rollbar
+rollbar.log('Hello world!')
+
 app.get("/", function(req, res){
     res.sendFile(path.join(__dirname, "./public/index.html"))
     })
@@ -21,6 +32,7 @@ app.get("/", function(req, res){
 app.get('/api/robots', (req, res) => {
     try {
         res.status(200).send(botsArr)
+        rollbar.info("Someone is looking at all the bots!");
     } catch (error) {
         console.log('ERROR GETTING BOTS', error)
         res.sendStatus(400)
@@ -35,6 +47,7 @@ app.get('/api/robots/five', (req, res) => {
         res.status(200).send({choices, compDuo})
     } catch (error) {
         console.log('ERROR GETTING FIVE BOTS', error)
+        rollbar.error("Shuffel didn't work")
         res.sendStatus(400)
     }
 })
@@ -59,9 +72,11 @@ app.post('/api/duel', (req, res) => {
         // comparing the total health to determine a winner
         if (compHealthAfterAttack > playerHealthAfterAttack) {
             playerRecord.losses++
+            rollbar.info("Player Won!")
             res.status(200).send('You lost!')
         } else {
             playerRecord.losses++
+            rollbar.info("Player lost, but successfully!")
             res.status(200).send('You won!')
         }
     } catch (error) {
@@ -73,11 +88,15 @@ app.post('/api/duel', (req, res) => {
 app.get('/api/player', (req, res) => {
     try {
         res.status(200).send(playerRecord)
+        rollbar.info("Got player stats!")
     } catch (error) {
         console.log('ERROR GETTING PLAYER STATS', error)
+        rollbar.error("couldn't get player stats")
         res.sendStatus(400)
     }
 })
+
+app.use(rollbar.errorHandler());
 
 const port = process.env.PORT || 3000
 
